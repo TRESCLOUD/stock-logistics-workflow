@@ -16,7 +16,14 @@ class StockMove(models.Model):
         res = super(StockMove, self)._prepare_account_move_line(qty, cost, credit_account_id, debit_account_id)
         #check if conditions are meet
         if self.product_id.cost_method == 'average' and not self.company_id.anglo_saxon_accounting:
-            valuation_amount = cost if self.location_id.usage == 'supplier' and self.location_dest_id.usage == 'internal' else self.product_id.standard_price
+            if self.location_id.usage == 'supplier' and self.location_dest_id.usage == 'internal':
+                #Incoming purchases from suppliers affects the average cost
+                valuation_amount = cost
+            elif self.location_id.usage == 'production' and self.location_dest_id.usage == 'internal':
+                #Incoming returns from manufacturing affects the average cost
+                valuation_amount = cost
+            else:
+                valuation_amount = self.product_id.standard_price
             # the standard_price of the product may be in another decimal precision, or not compatible with the coinage of
             # the company currency... so we need to use round() before creating the accounting entries.
             debit_value = self.company_id.currency_id.round(valuation_amount * qty)
@@ -31,6 +38,25 @@ class StockMove(models.Model):
             if self.location_id.usage == 'customer' and self.origin_returned_move_id:
                 #debit_value = self.origin_returned_move_id.price_unit * qty -- Odoo core error commented
                 credit_value = self.company_id.currency_id.round(self.origin_returned_move_id.price_unit * qty)
+            # Extra cases not available in odoo core, returns of stock.moves not linked to manufacturing:
+            # in case of raw material returns for products in average costing method, the stock_input
+            # account books the output price, while the stock account books the average price. The difference is
+            # booked in the dedicated price difference account.
+            if self.location_dest_id.usage == 'internal' and \
+               self.location_id.usage == 'production' and \
+               self.origin_returned_move_id and \
+               not self.origin_returned_move_id.origin_returned_move_id: #returns of a return has the price unset
+                debit_value = self.origin_returned_move_id.price_unit * qty
+            # in case of finished product returns, for products in average costing method, the stock_input
+            # account books the real purchase price, while the stock account books the average price. 
+            # The difference is booked in the dedicated price difference account.
+            if self.location_dest_id.usage == 'production' and \
+               self.location_id.usage == 'internal' and \
+               self.origin_returned_move_id and \
+               self.origin_returned_move_id.production_id and \
+               not self.origin_returned_move_id.origin_returned_move_id: #returns of a return has the price unset
+                debit_value = self.origin_returned_move_id.price_unit * qty
+                        
             #if credit_value distinct than debit_value:
             if float_compare(credit_value, debit_value, precision_digits=self.company_id.currency_id.decimal_places) != 0:
                 #change the amount of original line to keep the journal entry balanced
