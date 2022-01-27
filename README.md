@@ -19,10 +19,12 @@ Available addons
 ----------------
 addon | version | maintainers | summary
 --- | --- | --- | ---
+[stock_no_negative](stock_no_negative/) | 15.0.1.0.0 |  | Disallow negative stock levels by default
 [stock_picking_filter_lot](stock_picking_filter_lot/) | 15.0.1.0.0 |  | In picking out lots' selection, filter lots based on their location
 [stock_picking_purchase_order_link](stock_picking_purchase_order_link/) | 15.0.1.0.0 |  | Link between picking and purchase order
 [stock_picking_show_return](stock_picking_show_return/) | 15.0.1.0.0 |  | Show returns on stock pickings
 [stock_push_delay](stock_push_delay/) | 15.0.1.0.0 |  | Manual evaluation of Push rules
+[stock_restrict_lot](stock_restrict_lot/) | 15.0.0.0.1 | [![florian-dacosta](https://github.com/florian-dacosta.png?size=30px)](https://github.com/florian-dacosta) | Base module that add back the concept of restrict lot on stock move
 [stock_split_picking](stock_split_picking/) | 15.0.1.0.0 |  | Split a picking in two not transferred pickings
 
 [//]: # (end addons)
