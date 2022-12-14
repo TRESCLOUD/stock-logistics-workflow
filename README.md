@@ -21,10 +21,15 @@ Available addons
 ----------------
 addon | version | maintainers | summary
 --- | --- | --- | ---
+[stock_move_line_auto_fill](stock_move_line_auto_fill/) | 16.0.1.0.1 |  | Stock Move Line auto fill
 [stock_picking_auto_create_lot](stock_picking_auto_create_lot/) | 16.0.1.0.0 | [![sergio-teruel](https://github.com/sergio-teruel.png?size=30px)](https://github.com/sergio-teruel) | Auto create lots for incoming pickings
+[stock_picking_back2draft](stock_picking_back2draft/) | 16.0.1.0.0 |  | Reopen cancelled pickings
 [stock_picking_sale_order_link](stock_picking_sale_order_link/) | 16.0.1.0.0 |  | Link between picking and sale order
 [stock_putaway_hook](stock_putaway_hook/) | 16.0.1.0.0 |  | Add hooks allowing modules to add more putaway strategies
+[stock_quant_package_dimension](stock_quant_package_dimension/) | 16.0.1.0.0 |  | Use dimensions on packages
 [stock_quant_package_product_packaging](stock_quant_package_product_packaging/) | 16.0.1.0.1 |  | Use product packagings on packages
+[stock_receipt_lot_info](stock_receipt_lot_info/) | 16.0.1.0.0 |  | Be able to introduce more info on lot/serial number while processing a receipt.
+[stock_restrict_lot](stock_restrict_lot/) | 16.0.1.0.0 | [![florian-dacosta](https://github.com/florian-dacosta.png?size=30px)](https://github.com/florian-dacosta) | Base module that add back the concept of restrict lot on stock move
 
 [//]: # (end addons)
 
