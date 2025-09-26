@@ -12,6 +12,7 @@ from ..exceptions import (
     NoPickingCandidateError,
     NoSuitableDeviceError,
     PickingCandidateNumberLineExceedError,
+    PickingSplitNotPossibleError,
 )
 
 
@@ -79,16 +80,14 @@ class MakePickingBatch(models.TransientModel):
         "by default.",
     )
 
-    no_line_limit_if_no_candidate = fields.Boolean(
-        default=True,
-        string="No line limit if no candidate",
-        help="If checked, the maximum number of lines will not be applied if there is "
-        "no candidate to add to the batch with a number of lines less than the maximum "
-        "number of lines. This option is useful if you want relax the maximum number "
-        "of lines to allow to create a batch even if there is no candidate to add to "
-        "the batch at first. This will avoid to manually create a batch with a single "
-        "picking for the sole case where a device is suitable for the picking but the "
-        "picking has more lines than the maximum number of lines.",
+    split_picking_exceeding_limits = fields.Boolean(
+        default=False,
+        string="Split pickings exceeding limits",
+        help="If checked, the pickings exceeding the maximum number of lines, "
+        "volume or weight of available devices will be split into multiple pickings "
+        "to respect the limits. If unchecked, the pickings exceeding the limits will "
+        "not be added to the batch. The limits are defined by the limits of the last "
+        "available devices.",
     )
 
     __slots__ = (
@@ -132,7 +131,7 @@ class MakePickingBatch(models.TransientModel):
     def _reset_counters(self):
         self._volume_by_partners = defaultdict(lambda: 0)
         self._device = None
-        self._remaining_weight = 0
+        self._remaining_weight = None  # None means unlimited
         self._remaining_nbr_picking_lines = 0
         self._selected_picking_ids = []
         self._first_picking = None
@@ -179,11 +178,14 @@ class MakePickingBatch(models.TransientModel):
         return AND([picking_domain_common, picking_domain_first])
 
     def _get_picking_domain_for_device(self, device):
-        return [
-            ("volume", ">=", device.min_volume),
-            ("volume", "<=", device.max_volume),
-            ("weight", "<=", device.max_weight),
-        ]
+        domain = []
+        if device.min_volume:
+            domain.append(("volume", ">=", device.min_volume))
+        if device.max_volume:
+            domain.append(("volume", "<=", device.max_volume))
+        if device.max_weight:
+            domain.append(("weight", "<=", device.max_weight))
+        return domain
 
     def _get_picking_domain_for_additional(self):
         """Provides the domain expressing the additional constraints to apply to
@@ -197,9 +199,10 @@ class MakePickingBatch(models.TransientModel):
                 self._remaining_nbr_picking_lines,
             ),
             ("id", "not in", excluded_ids),
-            ("weight", "<=", self._remaining_weight),
             ("picking_type_id", "=", self._first_picking.picking_type_id.id),
         ]
+        if self._remaining_weight is not None:  # None means unlimited
+            domain.append(("weight", "<=", self._remaining_weight))
         previous_picking = self._previous_selected_picking
         if self.restrict_to_same_priority:
             domain.append(("priority", "=", previous_picking.priority))
@@ -259,15 +262,77 @@ class MakePickingBatch(models.TransientModel):
             domain, order=self._get_picking_order_by(), limit=limit
         )
 
-    def _get_first_picking(self, no_nbr_lines_limit=False):
-        domain = self._get_picking_domain_for_first(
-            no_nbr_lines_limit=no_nbr_lines_limit
-        )
-        device_domains = []
-        for device in self.stock_device_type_ids:
-            device_domains.append(self._get_picking_domain_for_device(device))
-        domain = AND([domain, OR(device_domains)])
-        return self._execute_search_pickings(domain, limit=1)
+    def _split_first_picking_for_limit(self, picking):
+        last_device = self.stock_device_type_ids[-1]
+        if last_device.split_mode == "dimension":
+            return (
+                self.env["stock.split.picking"]
+                .with_context(active_ids=picking.ids)
+                .create(
+                    {
+                        "mode": "dimensions",
+                        "max_nbr_lines": self.maximum_number_of_preparation_lines,
+                        "max_volume": last_device.max_volume,
+                        "max_weight": last_device.max_weight,
+                    }
+                )
+                ._action_apply()
+            )
+
+    def _is_picking_exceeding_limits(self, picking):
+        """Check if the picking exceeds the limits of the available devices.
+
+        :param picking: the picking to check
+        """
+        # First check the number of lines
+        if (
+            self.maximum_number_of_preparation_lines
+            and picking.nbr_picking_lines > self.maximum_number_of_preparation_lines
+        ):
+            return True
+        # Then, check the device limits
+        last_device = self.stock_device_type_ids[-1]
+        if last_device.split_mode == "dimension":
+            if last_device.max_volume and picking.volume > last_device.max_volume:
+                return True
+            if last_device.max_weight and picking.weight > last_device.max_weight:
+                return True
+        return False
+
+    def _get_first_picking(self, raise_if_not_found=False):
+        """Get the first picking to add to the batch.
+
+        If the split_picking_exceeding_limits is set, we try to find the first picking
+        without taking into account the limit on the number of lines and we split it
+        if it exceeds the limits. If the split is not possible, we raise an error.
+
+        Otherwise, we try to find the first picking taking into account the limit on the
+        number of lines.
+        """
+        no_limit = self.split_picking_exceeding_limits
+        domain = self._get_picking_domain_for_first(no_nbr_lines_limit=no_limit)
+        if not no_limit:
+            device_domains = []
+            for device in self.stock_device_type_ids:
+                device_domains.append(self._get_picking_domain_for_device(device))
+            domain = AND([domain, OR(device_domains)])
+        picking = self._execute_search_pickings(domain, limit=1)
+        if not picking and not no_limit and raise_if_not_found:
+            self._raise_create_batch_not_possible()
+        # at this stage we have the first picking to add to the batch but it could
+        # exceed the limits of the available devices. In this case we split the
+        # picking and return the picking to add to the batch. The split is done only
+        # if the split_picking_exceeding_limits is set to True.
+        if (
+            picking
+            and self.split_picking_exceeding_limits
+            and self._is_picking_exceeding_limits(picking)
+        ):
+            split_picking = self._split_first_picking_for_limit(picking)
+            if not split_picking and raise_if_not_found:
+                raise PickingSplitNotPossibleError(picking)
+            picking = split_picking
+        return picking
 
     def _get_additional_picking(self):
         """Get the next picking to add to the batch."""
@@ -298,23 +363,10 @@ class MakePickingBatch(models.TransientModel):
         return remaining_volume
 
     def _compute_device_to_use(self, picking):
-        available_devices = self.stock_device_type_ids.sorted(lambda d: d.sequence)
-        for device in available_devices:
-            if (
-                self._volume_condition_for_device_choice(
-                    device.min_volume,
-                    picking.volume,
-                    device.max_volume,
-                )
-                and tools.float_compare(
-                    device.max_weight,
-                    picking.weight,
-                    precision_digits=self._precision_volume(),
-                )
-                > 0
-            ):
+        for device in self.stock_device_type_ids.sorted("sequence"):
+            if picking.filtered_domain(self._get_picking_domain_for_device(device)):
                 return device
-        return None
+        return self.env["stock.device.type"]
 
     def _volume_condition_for_device_choice(
         self, min_volume, picking_volume, max_volume
@@ -333,13 +385,17 @@ class MakePickingBatch(models.TransientModel):
         # constrains. If not, we raise an error to inform the user that there
         # is no picking to process otherwise we raise an error to inform the
         # user that there is not suitable device to process the pickings.
-        if not self.no_line_limit_if_no_candidate:
-            domain = self._get_picking_domain_for_first(no_nbr_lines_limit=True)
-            candidates = self.env["stock.picking"].search(domain, limit=1)
-            if candidates:
-                raise PickingCandidateNumberLineExceedError(
-                    candidates, self.maximum_number_of_preparation_lines
-                )
+        domain = self._get_picking_domain_for_first(no_nbr_lines_limit=True)
+        device_domains = []
+        for device in self.stock_device_type_ids:
+            device_domains.append(self._get_picking_domain_for_device(device))
+        domain = AND([domain, OR(device_domains)])
+        candidates = self.env["stock.picking"].search(domain, limit=1)
+        if candidates:
+            raise PickingCandidateNumberLineExceedError(
+                candidates, self.maximum_number_of_preparation_lines
+            )
+
         domain = self._get_picking_domain_for_first()
         limit = 1
         if self.add_picking_list_in_error:
@@ -356,25 +412,21 @@ class MakePickingBatch(models.TransientModel):
         """Create a batch transfer."""
         self._reset_counters()
         # first we try to get the first picking for the user
-        first_picking = self._get_first_picking()
-        if not first_picking and self.no_line_limit_if_no_candidate:
-            first_picking = self._get_first_picking(no_nbr_lines_limit=True)
+        first_picking = self._get_first_picking(
+            raise_if_not_found=raise_if_not_possible
+        )
         if not first_picking:
-            if raise_if_not_possible:
-                self._raise_create_batch_not_possible()
             return self.env["stock.picking.batch"].browse()
         device = self._compute_device_to_use(first_picking)
+        if not device:
+            if raise_if_not_possible:
+                raise NoSuitableDeviceError(pickings=first_picking)
+            return self.env["stock.picking.batch"].browse()
         self._init_counters(first_picking, device)
         self._apply_limits()
         vals = self._create_batch_values()
         batch = self.env["stock.picking.batch"].create(vals)
         return batch
-
-    def _precision_volume(self):
-        return max(
-            6,
-            self.env["decimal.precision"].precision_get("Product Unit of Measure") * 2,
-        )
 
     def _init_counters(self, first_picking, device):
         """Initialize the counters used to compute the batch.
@@ -386,7 +438,11 @@ class MakePickingBatch(models.TransientModel):
         :param device: the device to use to prepare the batch
         """
         self._device = device
-        self._remaining_weight = device.max_weight - first_picking.weight
+        self._remaining_weight = (
+            max(device.max_weight - first_picking.weight, 0)
+            if device.max_weight
+            else None  # None means unlimited
+        )
         self._remaining_nbr_picking_lines = (
             self.maximum_number_of_preparation_lines - first_picking.nbr_picking_lines
         )

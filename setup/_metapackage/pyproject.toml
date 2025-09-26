@@ -1,6 +1,6 @@
 [project]
 name = "odoo-addons-oca-stock-logistics-workflow"
-version = "18.0.20250730.0"
+version = "18.0.20250923.0"
 dependencies = [
     "odoo-addon-delivery_procurement_group_carrier==18.0.*",
     "odoo-addon-delivery_total_weight_from_packaging==18.0.*",
@@ -9,9 +9,11 @@ dependencies = [
     "odoo-addon-product_customerinfo_picking==18.0.*",
     "odoo-addon-purchase_stock_picking_invoice_link==18.0.*",
     "odoo-addon-sale_line_returned_qty==18.0.*",
+    "odoo-addon-sale_line_returned_qty_mrp==18.0.*",
     "odoo-addon-sale_order_global_stock_route==18.0.*",
     "odoo-addon-sale_stock_picking_invoice_link==18.0.*",
     "odoo-addon-stock_account_product_run_fifo_hook==18.0.*",
+    "odoo-addon-stock_checkout_sync==18.0.*",
     "odoo-addon-stock_dangerous_goods==18.0.*",
     "odoo-addon-stock_dynamic_routing==18.0.*",
     "odoo-addon-stock_dynamic_routing_reserve_rule==18.0.*",
@@ -21,6 +23,7 @@ dependencies = [
     "odoo-addon-stock_move_auto_assign_auto_release==18.0.*",
     "odoo-addon-stock_move_line_change_lot==18.0.*",
     "odoo-addon-stock_move_line_qty_picked==18.0.*",
+    "odoo-addon-stock_move_original_date==18.0.*",
     "odoo-addon-stock_move_quantity_product_uom==18.0.*",
     "odoo-addon-stock_move_source_relocate==18.0.*",
     "odoo-addon-stock_move_source_relocate_dynamic_routing==18.0.*",
@@ -31,9 +34,13 @@ dependencies = [
     "odoo-addon-stock_picking_back2draft==18.0.*",
     "odoo-addon-stock_picking_backorder_strategy_cancel==18.0.*",
     "odoo-addon-stock_picking_batch_creation==18.0.*",
+    "odoo-addon-stock_picking_batch_creation_split_kit==18.0.*",
     "odoo-addon-stock_picking_batch_invoice_frequency==18.0.*",
+    "odoo-addon-stock_picking_batch_operation_quick_change==18.0.*",
+    "odoo-addon-stock_picking_batch_planner==18.0.*",
     "odoo-addon-stock_picking_batch_print_invoices==18.0.*",
     "odoo-addon-stock_picking_batch_print_pickings==18.0.*",
+    "odoo-addon-stock_picking_batch_validate_confirm==18.0.*",
     "odoo-addon-stock_picking_consolidation_priority==18.0.*",
     "odoo-addon-stock_picking_filter_lot==18.0.*",
     "odoo-addon-stock_picking_group_by_base==18.0.*",
@@ -44,11 +51,13 @@ dependencies = [
     "odoo-addon-stock_picking_kind==18.0.*",
     "odoo-addon-stock_picking_line_sequence==18.0.*",
     "odoo-addon-stock_picking_mass_action==18.0.*",
+    "odoo-addon-stock_picking_operation_quick_change==18.0.*",
     "odoo-addon-stock_picking_origin_reference==18.0.*",
     "odoo-addon-stock_picking_origin_reference_purchase==18.0.*",
     "odoo-addon-stock_picking_origin_reference_sale==18.0.*",
     "odoo-addon-stock_picking_partner_note==18.0.*",
     "odoo-addon-stock_picking_progress==18.0.*",
+    "odoo-addon-stock_picking_propagate_scheduled_date==18.0.*",
     "odoo-addon-stock_picking_purchase_order_link==18.0.*",
     "odoo-addon-stock_picking_restrict_cancel_printed==18.0.*",
     "odoo-addon-stock_picking_return_restricted_qty==18.0.*",
@@ -62,8 +71,11 @@ dependencies = [
     "odoo-addon-stock_picking_whole_scrap==18.0.*",
     "odoo-addon-stock_product_set==18.0.*",
     "odoo-addon-stock_production_lot_active==18.0.*",
+    "odoo-addon-stock_receipt_lot_info==18.0.*",
     "odoo-addon-stock_restrict_lot==18.0.*",
     "odoo-addon-stock_split_picking==18.0.*",
+    "odoo-addon-stock_split_picking_dimension==18.0.*",
+    "odoo-addon-stock_split_picking_kit==18.0.*",
     "odoo-addon-stock_valuation_layer_usage==18.0.*",
 ]
 classifiers=[
