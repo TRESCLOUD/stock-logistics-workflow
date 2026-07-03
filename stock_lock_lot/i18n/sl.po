@@ -10,17 +10,17 @@ msgstr ""
 "Project-Id-Version: stock-logistics-workflow (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-02-27 01:52+0000\n"
-"PO-Revision-Date: 2025-11-24 08:27+0000\n"
+"PO-Revision-Date: 2026-06-13 09:59+0000\n"
 "Last-Translator: Matjaz Mozetic <matjaz@luxim.si>\n"
-"Language-Team: Slovenian (http://www.transifex.com/oca/"
-"OCA-stock-logistics-workflow-8-0/language/sl/)\n"
+"Language-Team: Slovenian (http://www.transifex.com/oca/OCA-stock-logistics-"
+"workflow-8-0/language/sl/)\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
 "n%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 5.10.4\n"
+"X-Generator: Weblate 5.15.2\n"
 
 #. module: stock_lock_lot
 #: model:ir.model.fields,field_description:stock_lock_lot.field_stock_lot__message_needaction
@@ -82,12 +82,14 @@ msgstr ""
 #. module: stock_lock_lot
 #: model:ir.model.fields,help:stock_lock_lot.field_stock_lot__message_needaction
 msgid "If checked, new messages require your attention."
-msgstr "Če označeno pomeni, da nova sporočila zahtevajo vašo pozornost."
+msgstr "Če je označeno, nova sporočila zahtevajo vašo pozornost."
 
 #. module: stock_lock_lot
 #: model:ir.model.fields,help:stock_lock_lot.field_stock_lot__message_has_error
 msgid "If checked, some messages have a delivery error."
-msgstr "Označba pomeni, da nekatera sporočila vsebujejo napako pri dostavi."
+msgstr ""
+"Kadar je označeno, pomeni, da je pri nekaterih sporočilih prišlo do napake "
+"pri dostavi."
 
 #. module: stock_lock_lot
 #: model:ir.model.fields,help:stock_lock_lot.field_stock_location__allow_locked
@@ -122,7 +124,7 @@ msgstr "Lot/serijska št."
 #. module: stock_lock_lot
 #: model:ir.model.fields,field_description:stock_lock_lot.field_stock_lot__message_has_error
 msgid "Message Delivery error"
-msgstr "Napaka pri dostavi sporočila"
+msgstr "Napaka ob dostavi sporočila"
 
 #. module: stock_lock_lot
 #: model:ir.model.fields,field_description:stock_lock_lot.field_stock_lot__message_ids
@@ -147,7 +149,7 @@ msgstr "Število sporočil, ki zahtevajo ukrepanje"
 #. module: stock_lock_lot
 #: model:ir.model.fields,help:stock_lock_lot.field_stock_lot__message_has_error_counter
 msgid "Number of messages with delivery error"
-msgstr "Število sporočil z napako pri dostavi"
+msgstr "Število sporočil, ki niso bila pravilno dostavljena"
 
 #. module: stock_lock_lot
 #: model:ir.model.fields,field_description:stock_lock_lot.field_stock_lot__product_id
