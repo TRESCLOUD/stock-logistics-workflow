@@ -88,7 +88,7 @@ addon | version | maintainers | summary
 [stock_picking_date_deadline_syncs_scheduled_date](stock_picking_date_deadline_syncs_scheduled_date/) | 18.0.1.0.1 | <a href='https://github.com/Shide'><img src='https://github.com/Shide.png' width='32' height='32' style='border-radius:50%;' alt='Shide'/></a> | Sync Scheduled Date with Date Deadline in Stock Picking
 [stock_picking_filter_lot](stock_picking_filter_lot/) | 18.0.1.0.0 |  | In picking out lots' selection, filter lots based on their location
 [stock_picking_group_by_base](stock_picking_group_by_base/) | 18.0.1.0.0 |  | Allows to define a way to create index on extensible domain
-[stock_picking_group_by_partner_by_carrier](stock_picking_group_by_partner_by_carrier/) | 18.0.1.3.1 |  | Stock Picking: group by partner and carrier
+[stock_picking_group_by_partner_by_carrier](stock_picking_group_by_partner_by_carrier/) | 18.0.2.0.0 |  | Stock Picking: group by partner and carrier
 [stock_picking_group_by_partner_by_carrier_by_date](stock_picking_group_by_partner_by_carrier_by_date/) | 18.0.1.1.0 |  | Stock Picking: group by partner and carrier and scheduled date
 [stock_picking_group_by_partner_by_carrier_force_move_type](stock_picking_group_by_partner_by_carrier_force_move_type/) | 18.0.1.0.0 |  | Glue module for Picking Type Force Shipping Policy and Group Transfers by Partner and Carrier
 [stock_picking_import_serial_number](stock_picking_import_serial_number/) | 18.0.1.0.0 | <a href='https://github.com/sergio-teruel'><img src='https://github.com/sergio-teruel.png' width='32' height='32' style='border-radius:50%;' alt='sergio-teruel'/></a> | Import S/N from excel file for incoming pickings
@@ -105,6 +105,7 @@ addon | version | maintainers | summary
 [stock_picking_propagate_scheduled_date](stock_picking_propagate_scheduled_date/) | 18.0.1.0.0 |  | Propagate Stock Picking Scheduled Date
 [stock_picking_purchase_order_link](stock_picking_purchase_order_link/) | 18.0.1.1.0 |  | Link between picking and purchase order
 [stock_picking_restrict_cancel_printed](stock_picking_restrict_cancel_printed/) | 18.0.1.0.0 | <a href='https://github.com/jbaudoux'><img src='https://github.com/jbaudoux.png' width='32' height='32' style='border-radius:50%;' alt='jbaudoux'/></a> | Prevent canceling a stock transfer if printed.
+[stock_picking_restrict_partial_validation](stock_picking_restrict_partial_validation/) | 18.0.1.0.0 |  | Block validation of transfers that are not fully reserved and processed in full
 [stock_picking_return_lot](stock_picking_return_lot/) | 18.0.1.0.0 |  | Propagate SN/lots from origin picking to return picking.
 [stock_picking_return_restricted_qty](stock_picking_return_restricted_qty/) | 18.0.1.0.0 |  | Restrict the return to delivered quantity
 [stock_picking_sale_order_link](stock_picking_sale_order_link/) | 18.0.1.0.0 |  | Link between picking and sale order
