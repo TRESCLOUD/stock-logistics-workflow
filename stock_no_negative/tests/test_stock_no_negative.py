@@ -11,6 +11,15 @@ from odoo.addons.base.tests.common import BaseCommon
 
 
 class TestStockNoNegative(BaseCommon):
+    # Since 20: BaseCommon corre los tests con un usuario restringido, así que hay
+    # que declarar los grupos que el test realmente usa: mueve pickings (stock user)
+    # y escribe allow_negative_stock en productos y ubicaciones (product manager /
+    # stock manager). Sin esto revienta con AccessError.
+    _test_user_groups = BaseCommon._test_user_groups + (
+        "stock.group_stock_manager",
+        "product.group_product_manager",
+    )
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -90,7 +99,7 @@ class TestStockNoNegative(BaseCommon):
             {
                 "product_id": self.product.id,
                 "product_uom_qty": 100.0,
-                "product_uom": self.product.uom_id.id,
+                "uom_id": self.product.uom_id.id,
                 "picking_id": self.stock_picking.id,
                 "state": "draft",
                 "location_id": self.location_id.id,
@@ -117,7 +126,7 @@ class TestStockNoNegative(BaseCommon):
             {
                 "product_id": self.product_with_lot.id,
                 "product_uom_qty": 100.0,
-                "product_uom": self.product_with_lot.uom_id.id,
+                "uom_id": self.product_with_lot.uom_id.id,
                 "picking_id": self.stock_picking_with_lot.id,
                 "state": "draft",
                 "location_id": self.location_id.id,
@@ -131,7 +140,9 @@ class TestStockNoNegative(BaseCommon):
         make the stock level of the product negative"""
         self.stock_picking.action_confirm()
         with self.assertRaises(ValidationError):
-            self.stock_picking.button_validate()
+            self.stock_picking.with_context(
+                test_stock_no_negative=True
+            ).button_validate()
 
     def test_check_constrains_with_lot(self):
         """Assert that constraint is raised when user
@@ -151,7 +162,9 @@ class TestStockNoNegative(BaseCommon):
             }
         )
         with self.assertRaises(ValidationError):
-            self.stock_picking_with_lot.button_validate()
+            self.stock_picking_with_lot.with_context(
+                test_stock_no_negative=True
+            ).button_validate()
 
     def test_true_allow_negative_stock_product(self):
         """Assert that negative stock levels are allowed when
@@ -188,7 +201,9 @@ class TestStockNoNegative(BaseCommon):
         self.product_with_lot.allow_negative_stock = True
         self.stock_picking_with_lot.action_confirm()
         with self.assertRaises(UserError):
-            self.stock_picking_with_lot.button_validate()
+            self.stock_picking_with_lot.with_context(
+                test_stock_no_negative=True
+            ).button_validate()
         # create Detail Operations (move line with lot)
         self.stock_move_line_with_lot = self.env["stock.move.line"].create(
             {
