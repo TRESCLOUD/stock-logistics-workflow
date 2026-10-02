@@ -17,4 +17,5 @@
         "views/stock_location_views.xml",
     ],
     "installable": True,
+    "auto_install": True,  # TRESCLOUD: Util para instalación automática desde el autoinstaller
 }
